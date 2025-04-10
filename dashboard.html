@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LTrack</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-location-dot text-blue-600 text-2xl"></i>
+                        <span class="ml-2 text-xl font-semibold font-poppins">LocationTracker</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Home</a>
+                        <a href="track.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Track</a>
+                        <a href="dashboard.html" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-2xl font-bold font-poppins text-gray-800">Tracked Locations</h2>
+            </div>
+            
+            <!-- Filters -->
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-1">
+                        <input type="text" id="searchInput" placeholder="Search by name..." class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <button onclick="clearLocations()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        <i class="fas fa-trash-alt mr-2"></i> Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- No Data State -->
+            <div id="noDataState" class="hidden px-6 py-12 text-center">
+                <i class="fas fa-map-marker-alt text-gray-400 text-4xl"></i>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">No Locations Tracked</h3>
+                <p class="mt-2 text-gray-500">Generate a tracking link from the home page to start tracking locations.</p>
+                <a href="index.html" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i> Create Tracking Link
+                </a>
+            </div>
+
+            <!-- Locations Table -->
+            <div id="locationsTable" class="hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latitude</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Longitude</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="locationsTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Table rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 mt-12">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p class="text-base text-gray-400">&copy; 2025 LTrack by Rosh. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString();
+        }
+
+        function deleteLocation(id) {
+            let locations = JSON.parse(localStorage.getItem('trackedLocations') || '[]');
+            locations = locations.filter(loc => loc.id !== id);
+            localStorage.setItem('trackedLocations', JSON.stringify(locations));
+            loadLocations();
+        }
+
+        function clearLocations() {
+            if (confirm('Are you sure you want to clear all tracked locations?')) {
+                localStorage.removeItem('trackedLocations');
+                loadLocations();
+            }
+        }
+
+        function openInMaps(lat, lng) {
+            window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+        }
+
+        function loadLocations() {
+            const locations = JSON.parse(localStorage.getItem('trackedLocations') || '[]');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filteredLocations = locations.filter(loc => 
+                loc.name.toLowerCase().includes(searchTerm)
+            );
+
+            const noDataState = document.getElementById('noDataState');
+            const locationsTable = document.getElementById('locationsTable');
+            const tableBody = document.getElementById('locationsTableBody');
+
+            if (filteredLocations.length === 0) {
+                noDataState.classList.remove('hidden');
+                locationsTable.classList.add('hidden');
+                return;
+            }
+
+            noDataState.classList.add('hidden');
+            locationsTable.classList.remove('hidden');
+            
+            tableBody.innerHTML = filteredLocations.map(location => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${location.name}</div>
+                        <div class="text-sm text-gray-500">ID: ${location.id}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${location.latitude.toFixed(6)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${location.longitude.toFixed(6)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${formatDate(location.timestamp)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="openInMaps(${location.latitude}, ${location.longitude})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </button>
+                        <button onclick="deleteLocation('${location.id}')" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Initial load
+        loadLocations();
+
+        // Set up search functionality
+        document.getElementById('searchInput').addEventListener('input', loadLocations);
+    </script>
+</body>
+</html>

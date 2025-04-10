@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Enabling - LTrack</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-location-dot text-blue-600 text-2xl"></i>
+                        <span class="ml-2 text-xl font-semibold font-poppins">LocationEnable</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="index.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Home</a>
+                        <a href="track.html" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Track</a>
+                        <a href="dashboard.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <div id="loadingState" class="text-center py-12">
+                <i class="fas fa-location-crosshairs text-blue-500 text-4xl animate-pulse"></i>
+                <h2 class="mt-4 text-xl font-semibold font-poppins">Requesting Location Access...</h2>
+                <p class="mt-2 text-gray-500">Please allow location access when prompted</p>
+            </div>
+
+            <div id="successState" class="hidden">
+                <div class="text-center py-8">
+                    <i class="fas fa-check-circle text-green-500 text-4xl"></i>
+                    <h2 class="mt-4 text-xl font-semibold font-poppins">Location Successfully Tracked!</h2>
+                </div>
+                <div class="mt-6 bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-medium text-gray-900">Location Details</h3>
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Latitude</p>
+                            <p id="latitude" class="mt-1 text-sm text-gray-900"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Longitude</p>
+                            <p id="longitude" class="mt-1 text-sm text-gray-900"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Timestamp</p>
+                            <p id="timestamp" class="mt-1 text-sm text-gray-900"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="errorState" class="hidden text-center py-12">
+                <i class="fas fa-exclamation-circle text-red-500 text-4xl"></i>
+                <h2 class="mt-4 text-xl font-semibold font-poppins">Location Access Error</h2>
+                <p id="errorMessage" class="mt-2 text-gray-500"></p>
+                <button onclick="retryLocation()" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                    <i class="fas fa-redo mr-2"></i> Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 fixed bottom-0 w-full">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p class="text-base text-gray-400">&copy; 2025 LTrack by Rosh. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        function saveLocation(position) {
+            const trackingId = getQueryParam('id');
+            const trackingName = getQueryParam('name') || 'Unnamed Location';
+            
+            const locationData = {
+                id: trackingId,
+                name: trackingName,
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                timestamp: new Date().toISOString(),
+                accuracy: position.coords.accuracy
+            };
+
+            // Get existing locations or initialize empty array
+            let locations = JSON.parse(localStorage.getItem('trackedLocations') || '[]');
+            locations.push(locationData);
+            localStorage.setItem('trackedLocations', JSON.stringify(locations));
+
+            // Update UI
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('successState').classList.remove('hidden');
+            document.getElementById('latitude').textContent = position.coords.latitude.toFixed(6);
+            document.getElementById('longitude').textContent = position.coords.longitude.toFixed(6);
+            document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        }
+
+        function handleError(error) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+            
+            let errorMsg = 'An unknown error occurred.';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMsg = 'Location access was denied. Please allow location access to continue.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMsg = 'Location information is unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMsg = 'Location request timed out.';
+                    break;
+            }
+            document.getElementById('errorMessage').textContent = errorMsg;
+        }
+
+        function retryLocation() {
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+            requestLocation();
+        }
+
+        function requestLocation() {
+            if (!navigator.geolocation) {
+                handleError({ code: 0, message: 'Geolocation is not supported by your browser' });
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(saveLocation, handleError, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        }
+
+        // Start location request when page loads
+        window.onload = requestLocation;
+    </script>
+</body>
+</html>

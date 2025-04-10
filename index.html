@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracker - Share and Track Locations</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-location-dot text-blue-600 text-2xl"></i>
+                        <span class="ml-2 text-xl font-semibold font-poppins">Rosh LTrack</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="index.html" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Home</a>
+                        <a href="track.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Track</a>
+                        <a href="dashboard.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="relative bg-white overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
+                <main class="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
+                    <div class="sm:text-center lg:text-left">
+                        <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl font-poppins">
+                            <span class="block">Track Location</span>
+                            <span class="block text-blue-600">with Shared Links</span>
+                        </h1>
+                        <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                            Generate shareable links that track location when opened. Perfect for coordinating meetups, deliveries, or keeping track of shared locations.
+                        </p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link Generator Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-bold mb-4 font-poppins text-gray-800">Generate Tracking Link</h2>
+            <div class="space-y-6">
+                <div>
+                    <label for="linkName" class="block text-sm font-medium text-gray-700">Link Name (Optional)</label>
+                    <input type="text" id="linkName" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Enter a name for your link">
+                </div>
+                <div class="pt-4">
+                    <button id="generateLinkBtn" class="w-full inline-flex justify-center items-center px-6 py-4 border border-transparent text-xl font-medium rounded-lg shadow-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 hover:scale-105">
+                        <i class="fas fa-link mr-2"></i> Generate Link
+                    </button>
+                </div>
+                <div id="linkResult" class="hidden mt-4">
+                    <label class="block text-sm font-medium text-gray-700">Your Tracking Link</label>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                        <input type="text" id="generatedLink" readonly class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300" placeholder="Generated link will appear here">
+                        <button onclick="copyLink()" class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100 text-gray-500 sm:text-sm">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="errorMessage" class="hidden mt-4 p-4 rounded-md bg-red-50 text-red-700"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p class="text-base text-gray-400">&copy; 2025 LTrack by Rosh. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Add event listener when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('generateLinkBtn').addEventListener('click', generateLink);
+        });
+
+        function generateLink() {
+            console.log('Generate Link button clicked');
+            try {
+                const linkName = document.getElementById('linkName').value.trim();
+                console.log('Link name:', linkName);
+                
+                const uniqueId = Math.random().toString(36).substring(2, 15);
+                console.log('Generated ID:', uniqueId);
+                
+                const baseUrl = window.location.href.split('index.html')[0];
+                console.log('Base URL:', baseUrl);
+                
+                const trackingUrl = `${baseUrl}track.html?id=${uniqueId}${linkName ? '&name=' + encodeURIComponent(linkName) : ''}`;
+                console.log('Generated tracking URL:', trackingUrl);
+                
+                const linkResult = document.getElementById('linkResult');
+                const generatedLink = document.getElementById('generatedLink');
+                
+                console.log('Setting generated link and showing result');
+                generatedLink.value = trackingUrl;
+                linkResult.classList.remove('hidden');
+                
+                document.getElementById('errorMessage').classList.add('hidden');
+                console.log('Link generation complete');
+            } catch (error) {
+                console.error('Error generating link:', error);
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = 'An error occurred while generating the link. Please try again.';
+                errorMessage.classList.remove('hidden');
+            }
+        }
+
+        function copyLink() {
+            const linkInput = document.getElementById('generatedLink');
+            linkInput.select();
+            document.execCommand('copy');
+            
+            // Show temporary success message
+            const button = event.currentTarget;
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
